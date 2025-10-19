@@ -1,0 +1,387 @@
+{% extends 'layouts/admin.twig' %}
+
+{% block title %}Test de la Passerelle{% endblock %}
+{% block page_title %}Test de la Passerelle de Validation{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <a href="{{ url('maintenance') }}" class="text-blue-600 hover:text-blue-800 flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i>
+        Retour à Maintenance
+    </a>
+    <button id="syncBtn" onclick="syncPasserelle()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-2">
+        <i class="fas fa-sync-alt"></i>
+        Synchroniser maintenant
+    </button>
+</div>
+
+<div id="syncResult" class="hidden mb-6"></div>
+
+<!-- Résumé Global -->
+<div class="mb-6 p-6 rounded-lg {{ all_passed and warnings is empty ? 'bg-green-50 border-2 border-green-200' : (all_passed ? 'bg-yellow-50 border-2 border-yellow-200' : 'bg-red-50 border-2 border-red-200') }}">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            {% if all_passed and warnings is empty %}
+                <i class="fas fa-check-circle text-green-500 text-3xl"></i>
+            {% elseif all_passed %}
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl"></i>
+            {% else %}
+                <i class="fas fa-times-circle text-red-500 text-3xl"></i>
+            {% endif %}
+        </div>
+        <div class="ml-4">
+            <h3 class="text-xl font-bold {{ all_passed and warnings is empty ? 'text-green-800' : (all_passed ? 'text-yellow-800' : 'text-red-800') }}">
+                {% if all_passed and warnings is empty %}
+                    ✓ Tous les tests sont passés
+                {% elseif all_passed %}
+                    ⚠ Tests passés avec avertissements
+                {% else %}
+                    ✗ Certains tests ont échoué
+                {% endif %}
+            </h3>
+            <p class="mt-1 text-sm {{ all_passed and warnings is empty ? 'text-green-700' : (all_passed ? 'text-yellow-700' : 'text-red-700') }}">
+                {% if all_passed and warnings is empty %}
+                    La passerelle est fonctionnelle et prête à l'emploi.
+                {% elseif all_passed %}
+                    La passerelle fonctionne mais nécessite quelques ajustements.
+                {% else %}
+                    Des corrections sont nécessaires pour que la passerelle fonctionne correctement.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- TEST 1: Configuration -->
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center mb-4">
+        <div class="flex-shrink-0">
+            {% if test_results.config.passed %}
+                <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+            {% else %}
+                <i class="fas fa-times-circle text-red-500 text-2xl"></i>
+            {% endif %}
+        </div>
+        <h3 class="ml-3 text-lg font-semibold text-gray-900">1. Vérification de la Configuration</h3>
+    </div>
+
+    <div class="space-y-3">
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">Mode de validation:</span>
+            <span class="font-mono">{{ test_results.config.mode }}</span>
+            {% if test_results.config.mode == 'passerelle' %}
+                <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">ACTIF</span>
+            {% else %}
+                <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">INACTIF</span>
+            {% endif %}
+        </div>
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">URL de la passerelle:</span>
+            <span class="font-mono">{{ test_results.config.url ?: 'NON CONFIGURÉ' }}</span>
+            {% if test_results.config.url %}
+                <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">OK</span>
+            {% else %}
+                <span class="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">MANQUANT</span>
+            {% endif %}
+        </div>
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">Clé API:</span>
+            <span class="font-mono">{{ test_results.config.apikey ?: 'NON CONFIGURÉ' }}</span>
+            {% if test_results.config.apikey %}
+                <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded">OK</span>
+            {% else %}
+                <span class="ml-2 px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded">MANQUANT</span>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if test_results.config.error %}
+        <div class="mt-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+            <p class="font-semibold">{{ test_results.config.error }}</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- TEST 2: Connectivité -->
+{% if test_results.connectivity is defined %}
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center mb-4">
+        <div class="flex-shrink-0">
+            {% if test_results.connectivity.passed %}
+                <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+            {% else %}
+                <i class="fas fa-times-circle text-red-500 text-2xl"></i>
+            {% endif %}
+        </div>
+        <h3 class="ml-3 text-lg font-semibold text-gray-900">2. Test de Connectivité</h3>
+    </div>
+
+    <div class="space-y-3">
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">URL testée:</span>
+            <span class="font-mono text-sm">{{ test_results.connectivity.url }}</span>
+        </div>
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">Code HTTP:</span>
+            <span class="font-mono">{{ test_results.connectivity.http_code }}</span>
+        </div>
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">Temps de réponse:</span>
+            <span class="font-mono">{{ test_results.connectivity.response_time }} ms</span>
+        </div>
+    </div>
+
+    {% if test_results.connectivity.error %}
+        <div class="mt-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+            <p class="font-semibold">Erreur CURL: {{ test_results.connectivity.error }}</p>
+        </div>
+    {% elseif test_results.connectivity.response %}
+        <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-500">
+            <p class="font-semibold text-blue-800 mb-2">Réponse du serveur:</p>
+            <pre class="text-sm text-blue-900 overflow-x-auto">{{ test_results.connectivity.response|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- TEST 3: Validations en attente -->
+{% if test_results.validations is defined %}
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center mb-4">
+        <div class="flex-shrink-0">
+            {% if test_results.validations.passed %}
+                <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+            {% else %}
+                <i class="fas fa-times-circle text-red-500 text-2xl"></i>
+            {% endif %}
+        </div>
+        <h3 class="ml-3 text-lg font-semibold text-gray-900">3. Récupération des Validations en Attente</h3>
+    </div>
+
+    <div class="space-y-3">
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">URL testée:</span>
+            <span class="font-mono text-sm">{{ test_results.validations.url }}</span>
+        </div>
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">Code HTTP:</span>
+            <span class="font-mono">{{ test_results.validations.http_code }}</span>
+        </div>
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">Validations en attente:</span>
+            <span class="font-mono">{{ test_results.validations.count }}</span>
+        </div>
+    </div>
+
+    {% if test_results.validations.sample %}
+        <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-500">
+            <p class="font-semibold text-blue-800 mb-2">Exemple de validation:</p>
+            <pre class="text-sm text-blue-900 overflow-x-auto">{{ test_results.validations.sample|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- TEST 4: Service de Synchronisation -->
+{% if test_results.sync is defined %}
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center mb-4">
+        <div class="flex-shrink-0">
+            {% if test_results.sync.passed %}
+                <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+            {% else %}
+                <i class="fas fa-times-circle text-red-500 text-2xl"></i>
+            {% endif %}
+        </div>
+        <h3 class="ml-3 text-lg font-semibold text-gray-900">4. Test du Service de Synchronisation</h3>
+    </div>
+
+    <div class="space-y-3">
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">Statut:</span>
+            <span class="font-mono">{{ test_results.sync.message }}</span>
+        </div>
+        <div class="flex justify-between py-2 border-b">
+            <span class="font-medium text-gray-600">Validations synchronisées:</span>
+            <span class="font-mono">{{ test_results.sync.synced }}</span>
+        </div>
+    </div>
+
+    {% if test_results.sync.errors %}
+        <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-700">
+            <p class="font-semibold mb-2">Erreurs rencontrées:</p>
+            <ul class="list-disc list-inside">
+                {% for error in test_results.sync.errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if test_results.sync.error %}
+        <div class="mt-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+            <p class="font-semibold">{{ test_results.sync.error }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- TEST 5: Base de données -->
+{% if test_results.database is defined %}
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center mb-4">
+        <div class="flex-shrink-0">
+            {% if test_results.database.passed %}
+                <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+            {% else %}
+                <i class="fas fa-times-circle text-red-500 text-2xl"></i>
+            {% endif %}
+        </div>
+        <h3 class="ml-3 text-lg font-semibold text-gray-900">5. Vérification de la Base de Données</h3>
+    </div>
+
+    {% if test_results.database.tables %}
+        <div class="space-y-3">
+            {% for table, count in test_results.database.tables %}
+                <div class="flex justify-between py-2 border-b">
+                    <span class="font-medium text-gray-600">Table <code class="bg-gray-100 px-2 py-1 rounded">{{ table }}</code>:</span>
+                    <span class="font-mono">{{ count }} enregistrement(s)</span>
+                </div>
+            {% endfor %}
+            <div class="flex justify-between py-2 border-b">
+                <span class="font-medium text-gray-600">Tokens actifs:</span>
+                <span class="font-mono">{{ test_results.database.active_tokens }}</span>
+            </div>
+            <div class="flex justify-between py-2 border-b">
+                <span class="font-medium text-gray-600">Tokens expirés:</span>
+                <span class="font-mono">{{ test_results.database.expired_tokens }}</span>
+                {% if test_results.database.expired_tokens > 0 %}
+                    <span class="ml-2 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded">À NETTOYER</span>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if test_results.database.error %}
+        <div class="mt-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+            <p class="font-semibold">{{ test_results.database.error }}</p>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Recommandations -->
+{% if warnings or recommendations %}
+<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+    <h3 class="text-lg font-semibold text-yellow-800 mb-4 flex items-center gap-2">
+        <i class="fas fa-lightbulb"></i>
+        Recommandations
+    </h3>
+    <ul class="space-y-2">
+        {% for warning in warnings %}
+            <li class="flex items-start gap-2">
+                <i class="fas fa-arrow-right text-yellow-600 mt-1"></i>
+                <span class="text-yellow-800">{{ warning }}</span>
+            </li>
+        {% endfor %}
+        {% for rec in recommendations %}
+            <li class="flex items-start gap-2">
+                <i class="fas fa-arrow-right text-yellow-600 mt-1"></i>
+                <span class="text-yellow-800">{{ rec }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<script>
+function syncPasserelle() {
+    const btn = document.getElementById('syncBtn');
+    const resultDiv = document.getElementById('syncResult');
+
+    // Désactiver le bouton et afficher un spinner
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Synchronisation en cours...';
+
+    // Masquer le résultat précédent
+    resultDiv.classList.add('hidden');
+
+    // Appeler l'API de synchronisation
+    fetch('{{ url("maintenance/sync-passerelle") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Afficher le résultat
+        resultDiv.classList.remove('hidden');
+
+        if (data.success) {
+            resultDiv.innerHTML = `
+                <div class="p-4 rounded-lg bg-green-50 border-2 border-green-200">
+                    <div class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="font-bold text-green-800">Synchronisation réussie</h3>
+                            <p class="text-green-700 mt-1">${data.message}</p>
+                            <p class="text-green-700 mt-1"><strong>Validations synchronisées:</strong> ${data.synced}</p>
+                            ${data.errors && data.errors.length > 0 ? `
+                                <div class="mt-2">
+                                    <p class="font-semibold text-yellow-800">Avertissements:</p>
+                                    <ul class="list-disc list-inside text-yellow-700">
+                                        ${data.errors.map(err => `<li>${err}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Recharger la page après 2 secondes pour actualiser les stats
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            resultDiv.innerHTML = `
+                <div class="p-4 rounded-lg bg-red-50 border-2 border-red-200">
+                    <div class="flex items-start">
+                        <i class="fas fa-times-circle text-red-500 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="font-bold text-red-800">Échec de la synchronisation</h3>
+                            <p class="text-red-700 mt-1">${data.message || 'Une erreur est survenue'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Réactiver le bouton
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> Synchroniser maintenant';
+    })
+    .catch(error => {
+        // Erreur réseau
+        resultDiv.classList.remove('hidden');
+        resultDiv.innerHTML = `
+            <div class="p-4 rounded-lg bg-red-50 border-2 border-red-200">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-2xl mr-3"></i>
+                    <div>
+                        <h3 class="font-bold text-red-800">Erreur de connexion</h3>
+                        <p class="text-red-700 mt-1">${error.message}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Réactiver le bouton
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> Synchroniser maintenant';
+    });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends 'layouts/base.twig' %}
+
+{% block title %}Validation - {{ campaign.titre }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="container mx-auto px-4 max-w-5xl">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-clipboard-check text-indigo-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Validation de campagne</h1>
+                        <p class="text-sm text-gray-600">Bonjour {{ validator.prenom }} {{ validator.nom }}</p>
+                    </div>
+                </div>
+                {% if campaign.priorite == 'haute' %}
+                <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-800 font-semibold">
+                    <i class="fas fa-exclamation-circle mr-1"></i>PRIORITAIRE
+                </span>
+                {% endif %}
+            </div>
+
+            {% if app.request.get.success %}
+            <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+                <i class="fas fa-check-circle mr-2"></i>Votre validation a été enregistrée avec succès!
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Colonne principale -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Informations campagne -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">{{ campaign.titre }}</h2>
+
+                    {% if campaign.description %}
+                    <p class="text-gray-700 mb-6">{{ campaign.description }}</p>
+                    {% endif %}
+
+                    <div class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600 mb-1">Demandeur</p>
+                            <p class="text-gray-900">{{ campaign.demandeur }}</p>
+                            {% if campaign.demandeur_email %}
+                            <p class="text-xs text-gray-600">{{ campaign.demandeur_email }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-600 mb-1">Date événement</p>
+                            <p class="text-gray-900">{{ campaign.date_event_debut|date('d/m/Y') }}</p>
+                            {% if campaign.date_event_fin and campaign.date_event_fin != campaign.date_event_debut %}
+                            <p class="text-xs text-gray-600">au {{ campaign.date_event_fin|date('d/m/Y') }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Supports -->
+                    {% if supports is not empty %}
+                    <div class="mb-6">
+                        <p class="text-sm font-semibold text-gray-600 mb-2">Supports de diffusion</p>
+                        <div class="flex flex-wrap gap-2">
+                            {% for support in supports %}
+                            <span class="px-3 py-1 text-sm bg-indigo-100 text-indigo-800 rounded-full">
+                                {{ support.nom }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Visuels -->
+                    {% if files is not empty %}
+                    <div>
+                        <p class="text-sm font-semibold text-gray-600 mb-3">Visuels</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            {% for file in files %}
+                            <div class="border rounded-lg p-2">
+                                {% if file.type_mime starts with 'image/' %}
+                                <img src="{{ asset(file.chemin) }}" alt="{{ file.nom_original }}"
+                                     class="w-full h-48 object-cover rounded mb-2">
+                                {% else %}
+                                <div class="w-full h-48 bg-gray-100 rounded mb-2 flex items-center justify-center">
+                                    <i class="fas fa-file-pdf text-4xl text-gray-400"></i>
+                                </div>
+                                {% endif %}
+                                <p class="text-xs text-gray-600 truncate">{{ file.nom_original }}</p>
+                                <a href="{{ asset(file.chemin) }}" target="_blank" download
+                                   class="text-xs text-indigo-600 hover:text-indigo-800">
+                                    <i class="fas fa-download mr-1"></i>Télécharger
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Formulaire de validation -->
+                {% if not app.request.get.success %}
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Votre décision</h3>
+
+                    <form method="POST" action="/agora/public/validate/{{ token }}/submit">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Commentaire (optionnel)</label>
+                            <textarea name="commentaire" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                      placeholder="Ajoutez vos remarques ou suggestions..."></textarea>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button type="submit" name="action" value="valide"
+                                    class="flex-1 px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors">
+                                <i class="fas fa-check mr-2"></i>Valider
+                            </button>
+                            <button type="submit" name="action" value="refuse"
+                                    class="flex-1 px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors">
+                                <i class="fas fa-times mr-2"></i>Refuser
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Colonne latérale -->
+            <div class="space-y-6">
+                <!-- Circuit de validation -->
+                {% if validateurs is not empty %}
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <h3 class="text-sm font-bold text-gray-900 mb-3">Circuit de validation</h3>
+                    <div class="space-y-2">
+                        {% for validateur in validateurs %}
+                        <div class="flex items-center gap-2 p-2 bg-gray-50 rounded-lg {% if validateur.id == validator.id %}border-2 border-indigo-500{% endif %}">
+                            {% if validateur.validation_statut == 'valide' %}
+                            <i class="fas fa-check-circle text-green-600"></i>
+                            {% elseif validateur.validation_statut == 'refuse' %}
+                            <i class="fas fa-times-circle text-red-600"></i>
+                            {% else %}
+                            <i class="fas fa-clock text-orange-500"></i>
+                            {% endif %}
+                            <div class="flex-1 text-sm">
+                                <p class="font-medium">{{ validateur.prenom }} {{ validateur.nom }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Informations -->
+                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <h3 class="text-sm font-semibold text-blue-900 mb-2">
+                        <i class="fas fa-info-circle mr-1"></i>Informations
+                    </h3>
+                    <ul class="text-xs text-blue-800 space-y-1">
+                        <li>• Cette page est sécurisée et accessible uniquement via ce lien</li>
+                        <li>• Les visuels sont également joints dans l'email</li>
+                        <li>• Votre décision sera enregistrée immédiatement</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Rediriger toutes les requêtes vers index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Désactiver l'affichage des erreurs en production
+# php_flag display_errors Off
+
+# Sécurité
+<FilesMatch "\.(htaccess|htpasswd|ini|log|sh|sql)$">
+    Require all denied
+</FilesMatch>

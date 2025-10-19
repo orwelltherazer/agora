@@ -1,0 +1,50 @@
+<?php
+// Sauvegarde de l'ancien app.php avant simplification
+// Date: 19 octobre 2025
+
+return [
+    'debug' => true,
+    'name' => 'Agora',
+    'description' => 'Gestion des communications',
+    'version' => '1.0.0',
+    'url' => 'http://localhost/agora/public',
+    'timezone' => 'Europe/Paris',
+    'locale' => 'fr_FR',
+
+    // Paramètres de sécurité
+    'session' => [
+        'name' => 'AGORA_SESSION',
+        'lifetime' => 7200, // 2 heures
+        'path' => '/',
+        'domain' => '',
+        'secure' => false, // true en production avec HTTPS
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ],
+
+    // Upload de fichiers
+    'upload' => [
+        'max_size' => 10485760, // 10 Mo
+        'allowed_types' => ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ai', 'psd'],
+        'path' => __DIR__ . '/../public/uploads/',
+    ],
+
+    // Pagination
+    'pagination' => [
+        'per_page' => 20
+    ],
+
+    // Notifications
+    'notifications' => [
+        'relance_delai_jours' => 5,
+        'deadline_alerte_jours' => 7,
+    ],
+
+    // Système de validation
+    'validation' => [
+        'mode' => 'passerelle',
+        'passerelle_url' => 'https://passerelle-agora.example.com',
+        'passerelle_api_key' => 'CHANGE_ME_IN_PRODUCTION_SECRET_KEY_12345',
+        'token_expiry_days' => 30,
+    ]
+];

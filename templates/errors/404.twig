@@ -1,0 +1,43 @@
+{% extends 'layouts/base.twig' %}
+
+{% block title %}Erreur 404 - Page non trouvée{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="bi bi-question-circle-fill me-2"></i>
+                        Page non trouvée
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Erreur 404</h5>
+                    <p class="card-text">
+                        Désolé, la page que vous recherchez n'existe pas ou a été déplacée.
+                    </p>
+
+                    {% if message %}
+                        <div class="alert alert-warning">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <a href="/agora/public/" class="btn btn-primary">
+                            <i class="bi bi-house-door me-2"></i>
+                            Retour à l'accueil
+                        </a>
+                        <a href="javascript:history.back()" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

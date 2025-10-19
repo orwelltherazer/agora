@@ -1,0 +1,5 @@
+# Ignorer tous les fichiers de logs
+*.log
+
+# Garder ce fichier .gitignore
+!.gitignore

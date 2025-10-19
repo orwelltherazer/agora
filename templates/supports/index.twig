@@ -1,0 +1,89 @@
+{% extends 'layouts/admin.twig' %}
+
+{% block title %}Gestion des supports{% endblock %}
+{% block page_title %}Supports de communication{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url('supports/create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2">
+    <i class="fas fa-plus"></i>
+    Nouveau support
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Liste -->
+<div class="bg-white rounded-lg shadow-sm">
+    {% if supports is not empty %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ordre</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Capacité max</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for support in supports %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            {{ support.ordre_affichage }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-900">{{ support.nom }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if support.type == 'numerique' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
+                                    <i class="fas fa-laptop mr-1"></i>Numérique
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800 whitespace-nowrap">
+                                    <i class="fas fa-print mr-1"></i>Physique
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            {{ support.capacite_max ?? 'Illimité' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if support.actif %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-green-100 text-green-800 whitespace-nowrap">Actif</span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 whitespace-nowrap">Inactif</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right space-x-2">
+                            <a href="{{ url('supports/edit/' ~ support.id) }}" class="text-indigo-600 hover:text-indigo-900" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url('supports/delete/' ~ support.id) }}"
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce support ?')"
+                               class="text-red-600 hover:text-red-900" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-tv text-gray-400 text-5xl mb-4"></i>
+            <p class="text-gray-500 mb-4">Aucun support trouvé</p>
+            <a href="{{ url('supports/create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                <i class="fas fa-plus mr-2"></i>
+                Créer un support
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="mt-4 text-sm text-gray-600">
+    Total : {{ supports|length }} support(s)
+</div>
+{% endblock %}

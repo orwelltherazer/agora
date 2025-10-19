@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #4F46E5;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            margin: -30px -30px 30px -30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .campaign-info {
+            background-color: #f9fafb;
+            border-left: 4px solid #4F46E5;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .campaign-info h2 {
+            margin-top: 0;
+            color: #4F46E5;
+            font-size: 18px;
+        }
+        .info-row {
+            display: flex;
+            margin: 10px 0;
+        }
+        .info-label {
+            font-weight: 600;
+            width: 150px;
+            color: #666;
+        }
+        .info-value {
+            color: #333;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4F46E5;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        .button:hover {
+            background-color: #4338CA;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+        }
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>📋 Demande de validation</h1>
+        </div>
+
+        <p>Bonjour {{ validator.prenom }} {{ validator.nom }},</p>
+
+        <p>Une nouvelle campagne de communication nécessite votre validation :</p>
+
+        <div class="campaign-info">
+            <h2>{{ campaign.titre }}
+                {% if campaign.priorite == 'haute' %}
+                <span class="priority-badge">PRIORITAIRE</span>
+                {% endif %}
+            </h2>
+
+            {% if campaign.description %}
+            <p style="color: #666; margin: 10px 0;">{{ campaign.description }}</p>
+            {% endif %}
+
+            <div class="info-row">
+                <div class="info-label">Demandeur :</div>
+                <div class="info-value">{{ campaign.demandeur }}</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">Date événement :</div>
+                <div class="info-value">{{ campaign.date_event_debut|date('d/m/Y') }}</div>
+            </div>
+
+            {% if campaign.date_campagne_debut %}
+            <div class="info-row">
+                <div class="info-label">Date de parution :</div>
+                <div class="info-value">{{ campaign.date_campagne_debut|date('d/m/Y') }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <p>Merci de consulter la campagne et de donner votre validation ou vos remarques.</p>
+
+        {% if has_attachments %}
+        <div style="background-color: #ecf3ff; border-left: 4px solid #4F46E5; padding: 12px; margin: 20px 0;">
+            <p style="margin: 0; color: #1e3a8a; font-weight: 600; font-size: 14px;">
+                📎 {{ attachment_count }} visuel{% if attachment_count > 1 %}s{% endif %} joint{% if attachment_count > 1 %}s{% endif %} à cet email
+            </p>
+        </div>
+        {% endif %}
+
+        <div style="text-align: center;">
+            <a href="{{ validation_url }}" class="button">Consulter et valider en ligne</a>
+        </div>
+
+        <p style="font-size: 14px; color: #666; margin-top: 30px;">
+            <strong>💡 Accès depuis l'extérieur :</strong> Ce lien est accessible depuis n'importe où, même en dehors de l'intranet. Il vous permet de consulter la campagne et de valider directement en ligne.
+        </p>
+
+        <div class="footer">
+            <p>Cet email a été envoyé automatiquement par AGORA - Gestion des Campagnes de Communication.</p>
+            <p>Merci de ne pas répondre directement à cet email.</p>
+        </div>
+    </div>
+</body>
+</html>

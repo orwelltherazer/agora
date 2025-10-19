@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php tests/check_passerelle_db.php)",
+      "Bash(php tests/test_validation_form.php)",
+      "Bash(php tests/verify_complete_workflow.php)",
+      "Bash(git init)",
+      "Bash(git config user.name \"Agora Developer\")",
+      "Bash(git config user.email \"orwellrazer@gmail.com\")",
+      "Bash(git add .)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

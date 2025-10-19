@@ -1,0 +1,112 @@
+{% extends 'layouts/admin.twig' %}
+
+{% block title %}Résultats des Tests{% endblock %}
+{% block page_title %}Résultats des Tests Unitaires{% endblock %}
+
+{% block content %}
+
+<!-- Résumé global -->
+<div class="mb-6 bg-white rounded-lg border border-gray-200 p-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="text-center">
+            <div class="text-4xl font-bold text-gray-900">{{ totalTests }}</div>
+            <div class="text-sm text-gray-500 mt-1">Tests exécutés</div>
+        </div>
+        <div class="text-center">
+            <div class="text-4xl font-bold text-green-600">{{ totalPassed }}</div>
+            <div class="text-sm text-gray-500 mt-1">Réussis</div>
+        </div>
+        <div class="text-center">
+            <div class="text-4xl font-bold {{ totalFailed > 0 ? 'text-red-600' : 'text-gray-400' }}">{{ totalFailed }}</div>
+            <div class="text-sm text-gray-500 mt-1">Échoués</div>
+        </div>
+    </div>
+
+    {% set successRate = totalTests > 0 ? (totalPassed / totalTests * 100) : 0 %}
+    <div class="mt-6">
+        <div class="flex items-center justify-between text-sm mb-2">
+            <span class="font-medium text-gray-700">Taux de réussite</span>
+            <span class="font-bold {{ successRate == 100 ? 'text-green-600' : (successRate >= 80 ? 'text-yellow-600' : 'text-red-600') }}">
+                {{ successRate|number_format(2) }}%
+            </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-3">
+            <div class="h-3 rounded-full transition-all {{ successRate == 100 ? 'bg-green-500' : (successRate >= 80 ? 'bg-yellow-500' : 'bg-red-500') }}"
+                 style="width: {{ successRate }}%"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Résultats détaillés par test -->
+{% for result in results %}
+<div class="mb-6 bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">
+                <i class="fas fa-flask mr-2 text-indigo-600"></i>
+                {{ result.name }}
+            </h3>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-600">
+                    {{ result.passed }}/{{ result.total }} réussis
+                </span>
+                <span class="px-3 py-1 rounded-full text-sm font-medium {{ result.failed == 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                    {% if result.failed == 0 %}
+                        <i class="fas fa-check-circle mr-1"></i>Tous passés
+                    {% else %}
+                        <i class="fas fa-exclamation-circle mr-1"></i>{{ result.failed }} échoué(s)
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="divide-y divide-gray-200">
+        {% for test in result.tests %}
+        <div class="px-6 py-4 {{ test.passed ? 'bg-white' : 'bg-red-50' }}">
+            <div class="flex items-start justify-between">
+                <div class="flex items-start flex-1">
+                    <div class="flex-shrink-0 mt-1">
+                        {% if test.passed %}
+                            <i class="fas fa-check-circle text-green-500 text-lg"></i>
+                        {% else %}
+                            <i class="fas fa-times-circle text-red-500 text-lg"></i>
+                        {% endif %}
+                    </div>
+                    <div class="ml-3 flex-1">
+                        <div class="text-sm font-medium text-gray-900">{{ test.name }}</div>
+                        {% if test.message %}
+                        <div class="text-sm {{ test.passed ? 'text-gray-500' : 'text-red-600' }} mt-1">
+                            {{ test.message }}
+                        </div>
+                        {% endif %}
+                        {% if test.details %}
+                        <div class="text-xs text-gray-400 mt-1 font-mono">
+                            {{ test.details }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+<!-- Actions -->
+<div class="flex items-center justify-between mt-6">
+    <a href="{{ url('tests') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Retour aux tests
+    </a>
+
+    {% if not singleTest %}
+    <a href="{{ url('tests/run-all') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+        <i class="fas fa-redo mr-2"></i>
+        Relancer les tests
+    </a>
+    {% endif %}
+</div>
+
+{% endblock %}

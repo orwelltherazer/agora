@@ -1,0 +1,160 @@
+{% extends 'layouts/admin.twig' %}
+
+{% block title %}Nouvelle campagne{% endblock %}
+{% block page_title %}Nouvelle campagne{% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url('campaigns/store') }}" enctype="multipart/form-data">
+    <div class="grid grid-cols-3 gap-6">
+        <!-- Colonne gauche : Visuels -->
+        <div class="col-span-1">
+            <div class="bg-white rounded-lg shadow-sm p-4 sticky top-4">
+                <h3 class="font-semibold text-gray-900 mb-3 text-sm">Visuels</h3>
+                <input type="file" name="visuels[]" id="fileInput" multiple accept="image/*,.pdf" class="hidden">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-indigo-500 transition cursor-pointer"
+                     onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                    <p class="text-sm text-gray-600">Cliquez pour ajouter</p>
+                    <p class="text-xs text-gray-500 mt-1">Images ou PDF</p>
+                </div>
+                <div id="filePreview" class="grid grid-cols-1 gap-2 mt-3 hidden"></div>
+            </div>
+        </div>
+
+        <!-- Colonne droite : Formulaire -->
+        <div class="col-span-2 space-y-4">
+            <!-- Infos principales -->
+            <div class="bg-white rounded-lg shadow-sm p-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Titre *</label>
+                        <input type="text" name="titre" required
+                               class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Demandeur *</label>
+                        <input type="text" name="demandeur" required
+                               class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Email</label>
+                        <input type="email" name="demandeur_email"
+                               class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Description</label>
+                        <textarea name="description" rows="2"
+                                  class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dates -->
+            <div class="bg-white rounded-lg shadow-sm p-4">
+                <h3 class="font-semibold text-gray-900 mb-3 text-sm">Dates</h3>
+                <div class="grid grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Début événement *</label>
+                        <input type="date" name="date_event_debut" required
+                               class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Fin événement</label>
+                        <input type="date" name="date_event_fin"
+                               class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Début parution</label>
+                        <input type="date" name="date_campagne_debut"
+                               class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-600 mb-1">Fin parution</label>
+                        <input type="date" name="date_campagne_fin"
+                               class="w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supports et Validateurs -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <h3 class="font-semibold text-gray-900 mb-3 text-sm">Supports</h3>
+                    <div class="space-y-1">
+                        {% for support in supports %}
+                        <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                            <input type="checkbox" name="supports[]" value="{{ support.id }}" class="w-4 h-4 text-indigo-600 rounded">
+                            <span class="text-sm">{{ support.nom }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-sm p-4">
+                    <h3 class="font-semibold text-gray-900 mb-3 text-sm">Validateurs</h3>
+                    <div class="space-y-1">
+                        {% for user in users %}
+                        <label class="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                            <input type="checkbox" name="validateurs[]" value="{{ user.id }}" class="w-4 h-4 text-indigo-600 rounded">
+                            <span class="text-sm">{{ user.prenom }} {{ user.nom }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-3">
+                <a href="{{ url('campaigns') }}" class="px-4 py-2 text-sm border rounded-lg hover:bg-gray-50">
+                    Annuler
+                </a>
+                <button type="submit" name="action" value="brouillon"
+                        class="px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700">
+                    Brouillon
+                </button>
+                <button type="submit" name="action" value="validation"
+                        class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                    Soumettre
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script>
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const preview = document.getElementById('filePreview');
+    const files = e.target.files;
+
+    if (files.length > 0) {
+        preview.innerHTML = '';
+        preview.classList.remove('hidden');
+
+        Array.from(files).forEach((file) => {
+            const reader = new FileReader();
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'relative border rounded-lg p-2';
+
+            if (file.type.startsWith('image/')) {
+                reader.onload = function(e) {
+                    fileDiv.innerHTML = `
+                        <img src="${e.target.result}" class="w-full h-24 object-cover rounded">
+                        <p class="text-xs text-gray-600 mt-1 truncate">${file.name}</p>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                fileDiv.innerHTML = `
+                    <div class="w-full h-24 bg-gray-100 rounded flex items-center justify-center">
+                        <i class="fas fa-file-pdf text-2xl text-gray-400"></i>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-1 truncate">${file.name}</p>
+                `;
+            }
+
+            preview.appendChild(fileDiv);
+        });
+    }
+});
+</script>
+{% endblock %}

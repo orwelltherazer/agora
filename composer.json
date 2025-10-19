@@ -1,0 +1,19 @@
+{
+    "name": "agora/communication-municipale",
+    "description": "Système de gestion des communications municipales",
+    "type": "project",
+    "require": {
+        "php": ">=7.3",
+        "twig/twig": "^3.0",
+        "phpmailer/phpmailer": "^7.0",
+        "respect/validation": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Agora\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

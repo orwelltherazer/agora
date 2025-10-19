@@ -1,0 +1,292 @@
+{% extends 'layouts/admin.twig' %}
+
+{% block title %}{{ campaign.titre }}{% endblock %}
+{% block page_title %}Campagne de communication{% endblock %}
+
+{% block header_actions %}
+<div class="flex gap-2">
+    {% if campaign.statut != 'archivee' %}
+    <a href="{{ url('campaigns/edit/' ~ campaign.id) }}" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+        <i class="fas fa-edit mr-2"></i>Modifier
+    </a>
+    <a href="{{ url('campaigns/archive/' ~ campaign.id) }}" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700" onclick="return confirm('Voulez-vous vraiment archiver cette campagne ?')">
+        <i class="fas fa-archive mr-2"></i>Archiver
+    </a>
+    {% else %}
+    <a href="{{ url('campaigns/unarchive/' ~ campaign.id) }}" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700" onclick="return confirm('Voulez-vous vraiment désarchiver cette campagne ?')">
+        <i class="fas fa-box-open mr-2"></i>Désarchiver
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-3 gap-6">
+    <!-- Colonne gauche : Informations -->
+    <div class="col-span-2 space-y-4">
+        <!-- Informations principales -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <!-- Titre -->
+            <div class="mb-4">
+                <h2 class="text-2xl font-bold text-gray-900">{{ campaign.titre }}</h2>
+            </div>
+
+            <!-- Description -->
+            {% if campaign.description %}
+            <div class="mb-6">
+                <p class="text-gray-700">{{ campaign.description }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Dates et demandeur -->
+            <div class="grid grid-cols-3 gap-6 mb-6 pb-6 border-b">
+                <div>
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Demandeur</p>
+                    <p class="font-medium text-gray-900">{{ campaign.demandeur }}</p>
+                    {% if campaign.demandeur_email %}
+                    <p class="text-xs text-gray-600 mt-1">{{ campaign.demandeur_email }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Événement</p>
+                    <p class="font-medium text-gray-900">
+                        {{ campaign.date_event_debut|date('d/m/Y') }}
+                        {% if campaign.date_event_fin and campaign.date_event_fin != campaign.date_event_debut %}
+                        <br>→ {{ campaign.date_event_fin|date('d/m/Y') }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-gray-700 mb-2">Parution</p>
+                    <p class="font-medium text-gray-900">
+                        {% if campaign.date_campagne_debut %}
+                        {{ campaign.date_campagne_debut|date('d/m/Y') }}
+                        {% if campaign.date_campagne_fin and campaign.date_campagne_fin != campaign.date_campagne_debut %}
+                        <br>→ {{ campaign.date_campagne_fin|date('d/m/Y') }}
+                        {% endif %}
+                        {% else %}
+                        <span class="text-gray-400">Non définie</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Cycle de vie -->
+            <div>
+                <div class="flex items-center gap-2">
+                    <!-- Brouillon -->
+                    <div class="flex items-center">
+                        <span class="px-4 py-2 text-sm rounded-full {{ campaign.statut == 'brouillon' ? 'bg-gray-700 text-white font-semibold' : 'bg-gray-200 text-gray-400' }}">
+                            Brouillon
+                        </span>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-300"></i>
+
+                    <!-- En validation -->
+                    <div class="flex items-center">
+                        <span class="px-4 py-2 text-sm rounded-full {{ campaign.statut == 'en_validation' ? 'bg-orange-500 text-white font-semibold' : 'bg-gray-200 text-gray-400' }}">
+                            En validation
+                        </span>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-300"></i>
+
+                    <!-- Validée -->
+                    <div class="flex items-center">
+                        <span class="px-4 py-2 text-sm rounded-full {{ campaign.statut == 'validee' ? 'bg-green-600 text-white font-semibold' : 'bg-gray-200 text-gray-400' }}">
+                            Validée
+                        </span>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-300"></i>
+
+                    <!-- Publiée -->
+                    <div class="flex items-center">
+                        <span class="px-4 py-2 text-sm rounded-full {{ campaign.statut == 'publiee' ? 'bg-blue-600 text-white font-semibold' : 'bg-gray-200 text-gray-400' }}">
+                            Publiée
+                        </span>
+                    </div>
+
+                    {% if campaign.statut == 'archivee' %}
+                    <i class="fas fa-arrow-right text-gray-300"></i>
+                    <!-- Archivée -->
+                    <div class="flex items-center">
+                        <span class="px-4 py-2 text-sm rounded-full bg-gray-500 text-white font-semibold">
+                            <i class="fas fa-archive mr-1"></i>Archivée
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Supports -->
+        <div class="bg-white rounded-lg shadow-sm p-4">
+            <h3 class="text-base font-bold text-gray-900 mb-3">Supports</h3>
+            {% if supports is not empty %}
+            <div class="flex flex-wrap gap-2">
+                {% for support in supports %}
+                <span class="px-3 py-1 text-sm bg-indigo-100 text-indigo-800 rounded-full">
+                    {{ support.nom }}
+                </span>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500">Aucun support défini</p>
+            {% endif %}
+        </div>
+
+        <!-- Validateurs -->
+        {% if validateurs is not empty %}
+        <div class="bg-white rounded-lg shadow-sm p-4">
+            <h3 class="text-base font-bold text-gray-900 mb-3">Circuit de validation</h3>
+            <div class="space-y-2">
+                {% for validateur in validateurs %}
+                <div class="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                    {% if validateur.validation_statut == 'valide' %}
+                    <i class="fas fa-check-circle text-green-600"></i>
+                    {% else %}
+                    <i class="fas fa-clock text-orange-500"></i>
+                    {% endif %}
+                    <div class="flex-1">
+                        <p class="text-sm font-medium">{{ validateur.prenom }} {{ validateur.nom }}</p>
+                    </div>
+                    {% if validateur.validation_statut == 'valide' %}
+                    <span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Validé</span>
+                    {% else %}
+                    <span class="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded">En attente</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Colonne droite : Visuels -->
+    <div class="col-span-1">
+        {% if files is not empty %}
+        <div class="bg-white rounded-lg shadow-sm p-4 sticky top-4">
+            <h3 class="text-base font-bold text-gray-900 mb-3">Visuels</h3>
+            <div class="space-y-2">
+                {% set imageIndex = 0 %}
+                {% for file in files %}
+                <div class="border rounded-lg p-2">
+                    {% if file.type_mime starts with 'image/' %}
+                    <img src="{{ asset(file.chemin) }}" alt="{{ file.nom_original }}"
+                         onclick="openLightbox('{{ asset(file.chemin) }}', {{ imageIndex }})"
+                         class="w-full h-32 object-cover rounded hover:opacity-75 transition cursor-pointer">
+                    {% set imageIndex = imageIndex + 1 %}
+                    {% else %}
+                    <a href="{{ asset(file.chemin) }}" target="_blank"
+                       class="block w-full h-32 bg-gray-100 rounded flex items-center justify-center hover:bg-gray-200 transition">
+                        <i class="fas fa-file-pdf text-3xl text-gray-400"></i>
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow-sm p-4 sticky top-4">
+            <div class="text-center text-gray-400 py-8">
+                <i class="fas fa-image text-4xl mb-2"></i>
+                <p class="text-sm">Aucun visuel</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
+    <span class="lightbox-close" onclick="closeLightbox(event)">&times;</span>
+    <span class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1, event)" id="lightbox-prev">&#10094;</span>
+    <img id="lightbox-img" src="" alt="">
+    <span class="lightbox-nav lightbox-next" onclick="navigateLightbox(1, event)" id="lightbox-next">&#10095;</span>
+    <div class="lightbox-counter" id="lightbox-counter"></div>
+</div>
+
+{% if files is not empty %}
+<script>
+    var currentImageIndex = 0;
+
+    // Charger toutes les images dans le tableau lightbox
+    window.lightboxImages = [
+        {% set images = [] %}
+        {% for file in files %}
+        {% if file.type_mime starts with 'image/' %}
+        {% set images = images|merge([asset(file.chemin)]) %}
+        {% endif %}
+        {% endfor %}
+        {% for image in images %}
+        '{{ image }}'{{ not loop.last ? ',' : '' }}
+        {% endfor %}
+    ];
+
+    function updateCounter() {
+        const counter = document.getElementById('lightbox-counter');
+        if (window.lightboxImages.length > 1) {
+            counter.textContent = (currentImageIndex + 1) + ' / ' + window.lightboxImages.length;
+            counter.style.display = 'block';
+        } else {
+            counter.style.display = 'none';
+        }
+
+        const prev = document.getElementById('lightbox-prev');
+        const next = document.getElementById('lightbox-next');
+        if (window.lightboxImages.length <= 1) {
+            prev.style.display = 'none';
+            next.style.display = 'none';
+        } else {
+            prev.style.display = 'block';
+            next.style.display = 'block';
+        }
+    }
+
+    function openLightbox(imageSrc, index = 0) {
+        const lightbox = document.getElementById('lightbox');
+        const img = document.getElementById('lightbox-img');
+        currentImageIndex = index;
+        img.src = imageSrc;
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        updateCounter();
+    }
+
+    function closeLightbox(event) {
+        if (event.target.id === 'lightbox' || event.target.classList.contains('lightbox-close')) {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    function navigateLightbox(direction, event) {
+        event.stopPropagation();
+        if (window.lightboxImages.length <= 1) return;
+
+        currentImageIndex += direction;
+        if (currentImageIndex < 0) currentImageIndex = window.lightboxImages.length - 1;
+        if (currentImageIndex >= window.lightboxImages.length) currentImageIndex = 0;
+
+        document.getElementById('lightbox-img').src = window.lightboxImages[currentImageIndex];
+        updateCounter();
+    }
+
+    document.addEventListener('keydown', function(e) {
+        const lightbox = document.getElementById('lightbox');
+        if (!lightbox.classList.contains('active')) return;
+
+        if (e.key === 'Escape') {
+            lightbox.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        if (e.key === 'ArrowLeft') {
+            navigateLightbox(-1, { stopPropagation: function(){} });
+        }
+        if (e.key === 'ArrowRight') {
+            navigateLightbox(1, { stopPropagation: function(){} });
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}

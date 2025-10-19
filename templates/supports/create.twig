@@ -1,0 +1,70 @@
+{% extends 'layouts/admin.twig' %}
+
+{% block title %}Nouveau support{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Nouveau support</h1>
+</div>
+
+<div class="bg-white rounded-lg p-6 border border-gray-200">
+    <form method="POST" action="{{ url('supports/store') }}">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Nom -->
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nom du support *</label>
+                <input type="text" name="nom" required
+                       placeholder="Ex: 4x3, Site internet, Facebook..."
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <!-- Type -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Type *</label>
+                <select name="type" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="physique">Physique</option>
+                    <option value="numerique">Numérique</option>
+                </select>
+            </div>
+
+            <!-- Capacité max -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Capacité maximale</label>
+                <input type="number" name="capacite_max" min="0"
+                       placeholder="Laisser vide pour illimité"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <p class="text-xs text-gray-500 mt-1">Nombre max de campagnes simultanées</p>
+            </div>
+
+            <!-- Ordre d'affichage -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Ordre d'affichage</label>
+                <input type="number" name="ordre_affichage" value="0" min="0"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <!-- Actif -->
+            <div class="flex items-center">
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" name="actif" value="1" checked
+                           class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                    <span class="ml-2 text-sm text-gray-700">Support actif</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-6 flex justify-end gap-3">
+            <a href="{{ url('supports') }}"
+               class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                Annuler
+            </a>
+            <button type="submit"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                Créer le support
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

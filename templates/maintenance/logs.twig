@@ -1,0 +1,165 @@
+{% extends 'layouts/admin.twig' %}
+
+{% block title %}Journal d'événements{% endblock %}
+{% block page_title %}Journal d'événements{% endblock %}
+
+{% block content %}
+<!-- Filtres -->
+<div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+    <form method="GET" action="{{ url('maintenance/logs') }}" class="flex flex-wrap gap-4">
+        <div class="flex-1 min-w-64">
+            <input type="text" name="search" value="{{ filters.search ?? '' }}"
+                   placeholder="Rechercher par campagne ou description..."
+                   class="w-full px-4 py-2 border rounded-lg text-sm">
+        </div>
+        <select name="user_id" class="px-4 py-2 border rounded-lg text-sm">
+            <option value="">Tous les utilisateurs</option>
+            {% for user in users %}
+            <option value="{{ user.id }}" {{ filters.user_id == user.id ? 'selected' : '' }}>
+                {{ user.prenom }} {{ user.nom }}
+            </option>
+            {% endfor %}
+        </select>
+        <select name="action" class="px-4 py-2 border rounded-lg text-sm">
+            <option value="">Toutes les actions</option>
+            <option value="created" {{ filters.action == 'created' ? 'selected' : '' }}>Création</option>
+            <option value="updated" {{ filters.action == 'updated' ? 'selected' : '' }}>Modification</option>
+            <option value="status_changed" {{ filters.action == 'status_changed' ? 'selected' : '' }}>Changement de statut</option>
+            <option value="archived" {{ filters.action == 'archived' ? 'selected' : '' }}>Archivage</option>
+            <option value="unarchived" {{ filters.action == 'unarchived' ? 'selected' : '' }}>Désarchivage</option>
+            <option value="file_deleted" {{ filters.action == 'file_deleted' ? 'selected' : '' }}>Suppression de fichier</option>
+            <option value="files_added" {{ filters.action == 'files_added' ? 'selected' : '' }}>Ajout de fichiers</option>
+            <option value="validated" {{ filters.action == 'validated' ? 'selected' : '' }}>Validation</option>
+            <option value="rejected" {{ filters.action == 'rejected' ? 'selected' : '' }}>Refus</option>
+        </select>
+        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm">
+            Filtrer
+        </button>
+        <a href="{{ url('maintenance/logs') }}" class="px-4 py-2 border rounded-lg hover:bg-gray-50 text-sm">
+            Réinitialiser
+        </a>
+    </form>
+</div>
+
+<!-- Statistiques -->
+<div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+    <p class="text-sm text-gray-600">
+        <strong>{{ total_logs }}</strong> événement(s) trouvé(s)
+        {% if total_pages > 1 %}
+            - Page {{ page }} sur {{ total_pages }}
+        {% endif %}
+    </p>
+</div>
+
+<!-- Liste des logs -->
+<div class="bg-white rounded-lg shadow-sm">
+    {% if logs is not empty %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Campagne</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Utilisateur</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for log in logs %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                            {{ log.created_at|date('d/m/Y H:i') }}
+                        </td>
+                        <td class="px-6 py-4 text-sm">
+                            <a href="{{ url('campaigns/show/' ~ log.campaign_id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                {{ log.campaign_titre }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            {{ log.user_prenom }} {{ log.user_nom }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if log.action == 'created' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-plus-circle mr-1"></i>Création
+                                </span>
+                            {% elseif log.action == 'updated' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                    <i class="fas fa-edit mr-1"></i>Modification
+                                </span>
+                            {% elseif log.action == 'status_changed' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">
+                                    <i class="fas fa-exchange-alt mr-1"></i>Statut
+                                </span>
+                            {% elseif log.action == 'archived' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+                                    <i class="fas fa-archive mr-1"></i>Archivage
+                                </span>
+                            {% elseif log.action == 'unarchived' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+                                    <i class="fas fa-box-open mr-1"></i>Désarchivage
+                                </span>
+                            {% elseif log.action == 'file_deleted' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                                    <i class="fas fa-trash mr-1"></i>Fichier supprimé
+                                </span>
+                            {% elseif log.action == 'files_added' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-cyan-100 text-cyan-800">
+                                    <i class="fas fa-upload mr-1"></i>Fichiers ajoutés
+                                </span>
+                            {% elseif log.action == 'validated' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i>Validation
+                                </span>
+                            {% elseif log.action == 'rejected' %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">
+                                    <i class="fas fa-times-circle mr-1"></i>Refus
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+                                    {{ log.action }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">
+                            {{ log.description }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if total_pages > 1 %}
+        <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+            <div class="flex gap-2">
+                {% if page > 1 %}
+                    <a href="{{ url('maintenance/logs?page=' ~ (page - 1) ~ (filters.user_id ? '&user_id=' ~ filters.user_id : '') ~ (filters.action ? '&action=' ~ filters.action : '') ~ (filters.search ? '&search=' ~ filters.search : '')) }}"
+                       class="px-3 py-2 border rounded-lg hover:bg-gray-50 text-sm">
+                        Précédent
+                    </a>
+                {% endif %}
+
+                <span class="px-3 py-2 text-sm text-gray-600">
+                    Page {{ page }} / {{ total_pages }}
+                </span>
+
+                {% if page < total_pages %}
+                    <a href="{{ url('maintenance/logs?page=' ~ (page + 1) ~ (filters.user_id ? '&user_id=' ~ filters.user_id : '') ~ (filters.action ? '&action=' ~ filters.action : '') ~ (filters.search ? '&search=' ~ filters.search : '')) }}"
+                       class="px-3 py-2 border rounded-lg hover:bg-gray-50 text-sm">
+                        Suivant
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-12">
+            <i class="fas fa-clipboard-list text-gray-400 text-5xl mb-4"></i>
+            <p class="text-gray-500">Aucun événement trouvé</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

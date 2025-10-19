@@ -1,0 +1,60 @@
+# Vendor (Composer dependencies)
+/vendor/
+/tailadmin/
+
+# Configuration files with sensitive data
+/config/database.php
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Database dumps
+dump.sql
+*.sql.gz
+
+# Logs
+/logs/*.log
+/logs/*.txt
+
+# Uploads and storage
+/storage/uploads/*
+!/storage/uploads/.gitkeep
+
+# Passerelle database (SQLite)
+/passerelle/validation_queue.db
+/passerelle/*.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+/tmp/*
+!/tmp/.gitkeep
+*.tmp
+*.bak
+*.cache
+
+# Node modules (if using npm for frontend tools)
+/node_modules/
+
+# PHP CS Fixer
+.php_cs.cache
+
+# PHPUnit
+.phpunit.result.cache
+/phpunit.xml
+
+# Build files
+/build/
+/dist/

@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Redirect /validate/TOKEN to validate.php
+RewriteRule ^validate/([a-zA-Z0-9]+)$ validate.php?token=$1 [L,QSA]
+
+# Redirect /api.php requests
+RewriteRule ^api\.php/(.*)$ api.php [L,QSA,E=REQUEST_URI:/$1]

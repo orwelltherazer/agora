@@ -1,0 +1,126 @@
+{% extends 'layouts/admin.twig' %}
+
+{% block title %}Maintenance{% endblock %}
+{% block page_title %}Maintenance{% endblock %}
+
+{% block content %}
+<div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm text-yellow-700">
+                Cette page est réservée aux administrateurs. Les scripts de maintenance peuvent impacter le fonctionnement de l'application.
+            </p>
+        </div>
+    </div>
+</div>
+
+{% if test_result %}
+<div class="mb-6 p-4 rounded-lg {{ test_result.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200' }}">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            {% if test_result.success %}
+                <i class="fas fa-check-circle text-green-500 text-xl"></i>
+            {% else %}
+                <i class="fas fa-times-circle text-red-500 text-xl"></i>
+            {% endif %}
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium {{ test_result.success ? 'text-green-800' : 'text-red-800' }}">
+                {{ test_result.success ? 'Succès' : 'Erreur' }}
+            </h3>
+            <div class="mt-2 text-sm {{ test_result.success ? 'text-green-700' : 'text-red-700' }}">
+                <p>{{ test_result.message }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Scripts de maintenance -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Test d'envoi d'email -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center mb-4">
+            <div class="bg-blue-100 rounded-full p-3 mr-4">
+                <i class="fas fa-envelope text-blue-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">Test d'envoi d'email</h3>
+                <p class="text-sm text-gray-600">Vérifier la configuration SMTP</p>
+            </div>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">
+            Envoie un email de test à votre adresse pour vérifier que la configuration SMTP fonctionne correctement.
+        </p>
+        <form method="POST" action="{{ url('maintenance/test-email') }}">
+            <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+                <i class="fas fa-paper-plane"></i>
+                Envoyer un email de test
+            </button>
+        </form>
+    </div>
+
+    <!-- Journal d'événements -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center mb-4">
+            <div class="bg-purple-100 rounded-full p-3 mr-4">
+                <i class="fas fa-clipboard-list text-purple-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">Journal d'événements</h3>
+                <p class="text-sm text-gray-600">Traçabilité des opérations</p>
+            </div>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">
+            Consultez l'historique exhaustif de toutes les opérations effectuées sur les campagnes (création, modification, changement de statut, etc.).
+        </p>
+        <a href="{{ url('maintenance/logs') }}" class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2">
+            <i class="fas fa-search"></i>
+            Consulter le journal
+        </a>
+    </div>
+
+    <!-- Tests unitaires -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center mb-4">
+            <div class="bg-green-100 rounded-full p-3 mr-4">
+                <i class="fas fa-flask text-green-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">Tests Unitaires</h3>
+                <p class="text-sm text-gray-600">Vérification automatique</p>
+            </div>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">
+            Exécutez des tests automatiques pour vérifier le bon fonctionnement de l'application (base de données, configuration, etc.).
+        </p>
+        <a href="{{ url('tests') }}" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2">
+            <i class="fas fa-check-circle"></i>
+            Accéder aux tests
+        </a>
+    </div>
+
+    <!-- Test de la passerelle -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex items-center mb-4">
+            <div class="bg-indigo-100 rounded-full p-3 mr-4">
+                <i class="fas fa-exchange-alt text-indigo-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900">Test de la Passerelle</h3>
+                <p class="text-sm text-gray-600">Validation de la configuration</p>
+            </div>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">
+            Vérifiez la configuration et le bon fonctionnement de la passerelle de validation (connectivité, API, synchronisation).
+        </p>
+        <a href="{{ url('maintenance/test-passerelle') }}" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2">
+            <i class="fas fa-satellite-dish"></i>
+            Tester la passerelle
+        </a>
+    </div>
+</div>
+{% endblock %}

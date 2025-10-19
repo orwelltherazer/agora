@@ -1,0 +1,183 @@
+{% extends 'layouts/admin.twig' %}
+
+{% block title %}Tableau de bord{% endblock %}
+
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block header_actions %}
+<a href="{{ url('campaigns/create') }}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2 transition-colors">
+    <i class="fas fa-plus"></i>
+    Nouvelle campagne
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Statistiques -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
+    <!-- En attente -->
+    <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-500">En attente</span>
+                <h4 class="mt-1 text-2xl font-bold text-gray-800">{{ stats.en_attente ?? 0 }}</h4>
+            </div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
+                <i class="fas fa-clock text-orange-600"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- À valider -->
+    <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-500">À valider</span>
+                <h4 class="mt-1 text-2xl font-bold text-gray-800">{{ stats.a_valider ?? 0 }}</h4>
+            </div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
+                <i class="fas fa-users text-blue-600"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deadline < 3j -->
+    <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-500">Deadline &lt; 3j</span>
+                <h4 class="mt-1 text-2xl font-bold text-gray-800">{{ stats.deadline_3j ?? 0 }}</h4>
+            </div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100">
+                <i class="fas fa-exclamation-circle text-yellow-600"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- En retard -->
+    <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+            <div>
+                <span class="text-xs text-gray-500">En retard</span>
+                <h4 class="mt-1 text-2xl font-bold text-gray-800">{{ stats.en_retard ?? 0 }}</h4>
+            </div>
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
+                <i class="fas fa-chart-line text-red-600"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Campagnes en cours -->
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm">
+    <div class="p-4 md:p-6 border-b border-gray-200">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 class="text-lg font-bold text-gray-800">Campagnes en cours</h2>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ url('dashboard') }}" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors {{ filter is not defined or filter == 'all' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                    Toutes
+                </a>
+                <a href="{{ url('dashboard?filter=urgentes') }}" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors {{ filter == 'urgentes' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                    Urgentes
+                </a>
+                <a href="{{ url('dashboard?filter=en_validation') }}" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors {{ filter == 'en_validation' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                    En validation
+                </a>
+                <a href="{{ url('dashboard?filter=validee') }}" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors {{ filter == 'validee' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                    Validées
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="divide-y divide-gray-200">
+        {% if campaigns is not empty %}
+            {% for campaign in campaigns %}
+                <a href="{{ url('campaigns/show/' ~ campaign.id) }}" class="p-4 md:p-6 hover:bg-gray-50 transition-colors cursor-pointer block group">
+                    <div class="flex flex-col sm:flex-row items-start gap-4">
+                        {% if campaign.visuel %}
+                        <div class="flex-shrink-0 w-full sm:w-auto">
+                            <img src="{{ asset(campaign.visuel.chemin) }}" alt="{{ campaign.visuel.nom_original }}" class="w-full sm:w-24 h-48 sm:h-24 object-cover rounded-xl shadow-sm group-hover:shadow-md transition-shadow">
+                        </div>
+                        {% endif %}
+                        <div class="flex-1 min-w-0 w-full">
+                            <div class="flex flex-wrap items-center gap-2 mb-3">
+                                <h3 class="font-semibold text-gray-900 text-base sm:text-lg">{{ campaign.titre }}</h3>
+
+                                {% if campaign.statut == 'en_validation' %}
+                                    <span class="px-2 py-1 rounded-md text-xs font-medium border bg-orange-100 text-orange-800 border-orange-300">En validation</span>
+                                {% elseif campaign.statut == 'validee' %}
+                                    <span class="px-2 py-1 rounded-md text-xs font-medium border bg-green-100 text-green-800 border-green-300">Validée</span>
+                                {% elseif campaign.statut == 'publiee' %}
+                                    <span class="px-2 py-1 rounded-md text-xs font-medium border bg-blue-100 text-blue-800 border-blue-300">Publiée</span>
+                                {% elseif campaign.statut == 'brouillon' %}
+                                    <span class="px-2 py-1 rounded-md text-xs font-medium border bg-gray-100 text-gray-800 border-gray-300">Brouillon</span>
+                                {% else %}
+                                    <span class="px-2 py-1 rounded-md text-xs font-medium border bg-gray-100 text-gray-800 border-gray-300">{{ campaign.statut|capitalize }}</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="text-sm text-gray-600 mb-3">
+                                Demandeur: <span class="font-medium">{{ campaign.demandeur ?? 'Non spécifié' }}</span>
+                            </p>
+
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-sm text-gray-600">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-calendar-alt text-gray-400"></i>
+                                    <span class="font-medium">Événement:</span>
+                                    <span>{{ campaign.date_event_debut|date('d/m/Y') }}{% if campaign.date_event_fin and campaign.date_event_fin != campaign.date_event_debut %} → {{ campaign.date_event_fin|date('d/m/Y') }}{% endif %}</span>
+                                </div>
+                                {% if campaign.date_campagne_debut %}
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-bullhorn text-gray-400"></i>
+                                        <span class="font-medium">Parution:</span>
+                                        <span>{{ campaign.date_campagne_debut|date('d/m/Y') }}{% if campaign.date_campagne_fin and campaign.date_campagne_fin != campaign.date_campagne_debut %} → {{ campaign.date_campagne_fin|date('d/m/Y') }}{% endif %}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if campaign.supports %}
+                                <div class="flex flex-wrap items-center gap-2 mt-3">
+                                    <span class="text-xs text-gray-500 font-medium">Supports:</span>
+                                    {% for support in campaign.supports %}
+                                        <span class="text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded-lg">{{ support }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            {% if campaign.validateurs %}
+                                <div class="mt-3 flex flex-wrap items-center gap-2">
+                                    <span class="text-xs text-gray-500 font-medium">Validateurs:</span>
+                                    {% for validateur in campaign.validateurs %}
+                                        <div class="flex items-center gap-1.5 text-xs px-2 py-1 rounded-lg {{ validateur.statut == 'validé' ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-700' }}">
+                                            <i class="fas {{ validateur.statut == 'validé' ? 'fa-check-circle' : 'fa-clock' }}"></i>
+                                            <span class="font-medium">{{ validateur.nom }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="hidden sm:flex flex-col items-end gap-2 flex-shrink-0">
+                            {% if campaign.days_left is defined and campaign.days_left > 0 %}
+                                <span class="text-sm font-bold {{ campaign.days_left <= 3 ? 'text-red-600' : 'text-gray-600' }}">
+                                    J-{{ campaign.days_left }}
+                                </span>
+                            {% endif %}
+                            <i class="fas fa-chevron-right text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"></i>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-inbox text-gray-400 text-5xl mb-4"></i>
+                <p class="text-gray-500 mb-4">Aucune campagne pour le moment</p>
+                <a href="{{ url('campaigns/create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                    <i class="fas fa-plus mr-2"></i>
+                    Créer une campagne
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

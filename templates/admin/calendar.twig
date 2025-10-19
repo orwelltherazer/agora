@@ -1,0 +1,113 @@
+{% extends 'layouts/admin.twig' %}
+
+{% block title %}Calendrier des campagnes{% endblock %}
+{% block page_title %}Calendrier complet{% endblock %}
+
+{% block stylesheets %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-sm p-6">
+    <!-- Filtres supports -->
+    <div class="mb-6">
+        <div id="support-filters" class="flex flex-wrap gap-2"></div>
+    </div>
+
+    <!-- Calendrier FullCalendar -->
+    <div id='calendar'></div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/fr.global.min.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var allEvents = [
+        {% for campaign in all_campaigns %}
+        {
+            title: '{{ campaign.titre|e('js') }}',
+            start: '{{ campaign.date_event_debut }}',
+            {% if campaign.date_event_fin %}end: '{{ campaign.date_event_fin }}',{% endif %}
+            backgroundColor: '{{ campaign.color }}',
+            borderColor: '{{ campaign.color }}',
+            extendedProps: {
+                demandeur: '{{ campaign.demandeur|e('js') }}',
+                statut: '{{ campaign.statut }}',
+                supports: {{ campaign.supports_array|json_encode|raw }}
+            }
+        },
+        {% endfor %}
+    ];
+
+    var supports = {{ all_supports|map(s => s.nom)|json_encode|raw }};
+    var activeSupports = new Set();
+
+    // Charger depuis localStorage ou activer tous par défaut
+    var savedSupports = localStorage.getItem('calendarSupports');
+    if (savedSupports) {
+        JSON.parse(savedSupports).forEach(function(s) {
+            activeSupports.add(s);
+        });
+    } else {
+        supports.forEach(function(support) {
+            activeSupports.add(support);
+        });
+    }
+
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'fr',
+        initialView: 'dayGridMonth',
+        height: 'auto',
+        headerToolbar: {
+            left: 'title',
+            center: '',
+            right: 'prev,next'
+        },
+        events: function(info, successCallback) {
+            var filtered = allEvents.filter(function(event) {
+                return event.extendedProps.supports.length === 0 ||
+                       event.extendedProps.supports.some(function(s) {
+                           return activeSupports.has(s);
+                       });
+            });
+            successCallback(filtered);
+        },
+        eventClick: function(info) {
+            alert('Campagne: ' + info.event.title +
+                  '\nDemandeur: ' + info.event.extendedProps.demandeur +
+                  '\nSupports: ' + info.event.extendedProps.supports.join(', '));
+        }
+    });
+    calendar.render();
+
+    // Créer filtres supports
+    var filtersDiv = document.getElementById('support-filters');
+
+    supports.forEach(function(support) {
+        var btn = document.createElement('button');
+        var isActive = activeSupports.has(support);
+        btn.className = isActive
+            ? 'px-3 py-1 text-sm rounded-lg border bg-green-600 text-white border-green-600'
+            : 'px-3 py-1 text-sm rounded-lg border bg-gray-300 text-gray-600 border-gray-300';
+        btn.textContent = support;
+        btn.onclick = function() {
+            if (activeSupports.has(support)) {
+                activeSupports.delete(support);
+                btn.classList.remove('bg-green-600', 'text-white', 'border-green-600');
+                btn.classList.add('bg-gray-300', 'text-gray-600', 'border-gray-300');
+            } else {
+                activeSupports.add(support);
+                btn.classList.add('bg-green-600', 'text-white', 'border-green-600');
+                btn.classList.remove('bg-gray-300', 'text-gray-600', 'border-gray-300');
+            }
+            localStorage.setItem('calendarSupports', JSON.stringify(Array.from(activeSupports)));
+            calendar.refetchEvents();
+        };
+        filtersDiv.appendChild(btn);
+    });
+});
+</script>
+{% endblock %}

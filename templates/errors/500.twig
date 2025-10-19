@@ -1,0 +1,50 @@
+{% extends 'layouts/base.twig' %}
+
+{% block title %}Erreur 500 - Erreur serveur{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        Erreur serveur
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Une erreur s'est produite</h5>
+                    <p class="card-text">
+                        Désolé, une erreur inattendue s'est produite lors du traitement de votre requête.
+                    </p>
+
+                    {% if message %}
+                        <div class="alert alert-danger">
+                            <strong>Détails :</strong> {{ message }}
+                        </div>
+                    {% endif %}
+
+                    {% if trace and is_dev %}
+                        <div class="mt-3">
+                            <h6>Trace de l'erreur (mode développement) :</h6>
+                            <pre class="bg-light p-3 border rounded"><code>{{ trace }}</code></pre>
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <a href="/agora/public/" class="btn btn-primary">
+                            <i class="bi bi-house-door me-2"></i>
+                            Retour à l'accueil
+                        </a>
+                        <a href="javascript:history.back()" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

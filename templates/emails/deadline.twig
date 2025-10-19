@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #DC2626;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            margin: -30px -30px 30px -30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .campaign-info {
+            background-color: #fef2f2;
+            border-left: 4px solid #DC2626;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .campaign-info h2 {
+            margin-top: 0;
+            color: #DC2626;
+            font-size: 18px;
+        }
+        .alert-box {
+            background-color: #fee2e2;
+            border: 2px solid #DC2626;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .alert-box .days {
+            font-size: 36px;
+            font-weight: bold;
+            color: #DC2626;
+            margin: 10px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #DC2626;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        .button:hover {
+            background-color: #B91C1C;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>⚠️ Alerte Deadline</h1>
+        </div>
+
+        <p>Bonjour {{ recipient.prenom }} {{ recipient.nom }},</p>
+
+        <div class="alert-box">
+            <p style="margin: 0; font-size: 16px; font-weight: 600;">⏰ Deadline imminente !</p>
+            <div class="days">{{ days_left }} jour{% if days_left > 1 %}s{% endif %}</div>
+            <p style="margin: 0; font-size: 14px;">avant l'événement</p>
+        </div>
+
+        <p>La campagne suivante approche de sa deadline :</p>
+
+        <div class="campaign-info">
+            <h2>{{ campaign.titre }}</h2>
+
+            {% if campaign.description %}
+            <p style="color: #666; margin: 10px 0;">{{ campaign.description }}</p>
+            {% endif %}
+
+            <div style="display: flex; margin: 10px 0;">
+                <div style="font-weight: 600; width: 150px; color: #666;">Demandeur :</div>
+                <div>{{ campaign.demandeur }}</div>
+            </div>
+
+            <div style="display: flex; margin: 10px 0;">
+                <div style="font-weight: 600; width: 150px; color: #666;">Date événement :</div>
+                <div>{{ campaign.date_event_debut|date('d/m/Y') }}</div>
+            </div>
+
+            <div style="display: flex; margin: 10px 0;">
+                <div style="font-weight: 600; width: 150px; color: #666;">Statut :</div>
+                <div>
+                    {% if campaign.statut == 'brouillon' %}Brouillon
+                    {% elseif campaign.statut == 'en_validation' %}En validation
+                    {% elseif campaign.statut == 'validee' %}Validée
+                    {% elseif campaign.statut == 'publiee' %}Publiée
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        {% if campaign.statut == 'en_validation' %}
+        <p style="color: #DC2626; font-weight: 600;">⚠️ Cette campagne est toujours en attente de validation !</p>
+        {% elseif campaign.statut == 'validee' %}
+        <p>Merci de vous assurer que tous les éléments sont prêts pour la publication.</p>
+        {% endif %}
+
+        <div style="text-align: center;">
+            <a href="{{ app.url }}/campaigns/show/{{ campaign.id }}" class="button">Consulter la campagne</a>
+        </div>
+
+        <div class="footer">
+            <p>Cet email a été envoyé automatiquement par AGORA - Gestion des Campagnes de Communication.</p>
+            <p>Merci de ne pas répondre directement à cet email.</p>
+        </div>
+    </div>
+</body>
+</html>
