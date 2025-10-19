@@ -1,5 +1,11 @@
 # AGORA - Système de Gestion de Campagnes de Communication
 
+![PHP Version](https://img.shields.io/badge/PHP-7.3%2B-blue)
+![MySQL](https://img.shields.io/badge/MySQL-5.7%2B-orange)
+![License](https://img.shields.io/badge/license-Proprietary-red)
+![Version](https://img.shields.io/badge/version-1.0-green)
+![Status](https://img.shields.io/badge/status-Production%20Ready-brightgreen)
+
 Application web de gestion de campagnes de communication pour collectivités locales, avec système de validation externe par passerelle.
 
 ## Caractéristiques
